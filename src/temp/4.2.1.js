@@ -1,25 +1,15 @@
-/* 4.1.1：一个彩色三角形 */
-
 // 顶点着色器
 var VSHADER_SOURCE =
   'attribute vec4 a_Position;\n' +
-  'attribute vec3 a_Color;\n' +
-  'varying vec3 v_Color;\n' +
 
   'void main() {\n' +
   '  gl_Position = a_Position;\n' +
-  '  v_Color = a_Color;\n' +
   '}\n';
 
 // 片元着色器
 var FSHADER_SOURCE =
-  '#ifdef GL_ES\n' +
-    'precision mediump float;\n' +
-  '#endif\n' +
-  'varying vec3 v_Color;\n' + // 片元着色器接收变量：定义一个同样的 varying 变量
-
   'void main() {\n' +
-  '  gl_FragColor = vec4(v_Color.rgb, 1.0);\n' +
+  '  gl_FragColor = vec4(1.0, 0, 0, 1.0);\n' +
   '}\n';
 
 function main () {
@@ -33,26 +23,21 @@ function main () {
     return;
   }
 
-  // 写入顶点数据
+  // 写入矩形顶点数据：两个三角形
+  // var vertices = new Float32Array([
+  //   -0.5, 0.5, -0.5, -0.5, 0.5, 0.5,
+  //   0.5, -0.5, -0.5, -0.5, 0.5, 0.5,
+  // ]);
   var vertices = new Float32Array([
-    0, 0.5,
-    -0.5, -0.5,
-    0.5, -0.5
+    -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5
   ]);
   var n = initArrayBuffers(gl, vertices, 'a_Position', 2);
-  
-  // 写入颜色数据
-  var colors = new Float32Array([
-    1.0, 0.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 0.0, 1.0,
-  ]);
-  initArrayBuffers(gl, colors, 'a_Color', 3);
 
   // 画图
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.drawArrays(gl.TRIANGLES, 0, n);
+  // gl.drawArrays(gl.TRIANGLES, 0, n);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
 }
 
 function initArrayBuffers (gl, vertices, attribName, num) {
@@ -64,5 +49,5 @@ function initArrayBuffers (gl, vertices, attribName, num) {
   gl.vertexAttribPointer(position, num, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(position); // 激活变量
 
-  return vertices.length / num;
+  return vertices.length / 2;
 }

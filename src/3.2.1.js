@@ -1,9 +1,9 @@
 // 顶点着色器
 var VSHADER_SOURCE =
   'attribute vec4 a_Position;\n' +
-  'uniform vec4 u_Translation;\n' +
+  'uniform mat4 u_ModelMatrix;\n' +
   'void main() {\n' +
-  '  gl_Position = a_Position + u_Translation;\n' +
+  '  gl_Position = u_ModelMatrix * a_Position;\n' +
   '}\n';
 
 // 片元着色器
@@ -29,14 +29,17 @@ function main() {
   var vertices = new Float32Array([
     0, 0.5,   -0.5, -0.5,   0.5, -0.5
   ]);
-  var n = initVertexBuffers(gl, vertices, 'a_position');
+  var n = initVertexBuffers(gl, vertices, 'a_Position');
 
-  // 写入偏移量
-  var u_Translation = gl.getUniformLocation(gl.program, 'u_Translation');
-  gl.uniform4f(u_Translation, Tx, Ty, Tz, 0.0);
+  // 偏移矩阵
+  var modelMatrix = new Matrix4();
+  modelMatrix.setTranslate(Tx, Ty, Tz);
+  console.log('u_ModelMatrix', modelMatrix.elements);
+  var u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
 
   // 清空背景
-  gl.clearColor(0, 0, 0, 1);
+  gl.clearColor(0, 0, 0, 0.5);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   // 画图
@@ -52,6 +55,6 @@ function initVertexBuffers(gl, vertices, attribName) {
   gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(position); // 激活变量
 
-  return vertices / 2;
+  return vertices.length / 2;
 }
 

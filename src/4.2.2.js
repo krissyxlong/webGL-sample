@@ -1,11 +1,15 @@
+/* 4.2.2：三个彩色三角形 + 视图矩阵 */
+
 // 顶点着色器
 var VSHADER_SOURCE =
   'attribute vec4 a_Position;\n' +
-  'attribute vec2 a_TexCoord;\n' +
-  'varying vec2 v_TexCoord;\n' +
+  'uniform mat4 u_ViewMatrix;\n' +
+  'attribute vec3 a_Color;\n' +
+  'varying vec3 v_Color;\n' +
+
   'void main() {\n' +
-  '  gl_Position = a_Position;\n' +
-  '  v_TexCoord = a_TexCoord;\n' +
+  '  gl_Position = u_ViewMatrix * a_Position;\n' +
+  '  v_Color = a_Color;\n' +
   '}\n';
 
 // 片元着色器
@@ -13,10 +17,10 @@ var FSHADER_SOURCE =
   '#ifdef GL_ES\n' +
   'precision mediump float;\n' +
   '#endif\n' +
-  'uniform sampler2D u_Sampler;\n' +
-  'varying vec2 v_TexCoord;\n' +
+  'varying vec3 v_Color;\n' + // 片元着色器接收变量：定义一个同样的 varying 变量
+
   'void main() {\n' +
-  '  gl_FragColor = texture2D(u_Sampler, v_TexCoord);\n' +
+  '  gl_FragColor = vec4(v_Color.rgb, 1.0);\n' +
   '}\n';
 
 function main () {
@@ -30,32 +34,52 @@ function main () {
     return;
   }
 
-  gl.clearColor(0.0, 0.0, 0.0, 0.4);
-
-  // 写入矩形顶点数据
+  // 写入顶点数据
   var vertices = new Float32Array([
-    -0.5, 0.5,
-    -0.5, -0.5,
-    0.5, 0.5,
-    0.5, -0.5
-  ]);
-  var n = initArrayBuffers(gl, vertices, 'a_Position', 2);
+    0.0, 0.5, -0.4,  // The back green one
+    -0.5, -0.5, -0.4,
+    0.5, -0.5, -0.4,
 
-  // 写入纹理坐标数据
-  var texCoords = new Float32Array([
-    0.0, 1.0,
-    0.0, 0.0,
-    1.0, 1.0,
-    1.0, 0.0,
-  ]);
-  initArrayBuffers(gl, texCoords, 'a_TexCoord', 2);
+    0.5, 0.4, -0.2, // The middle yellow one
+    -0.5, 0.4, -0.2,
+    0.0, -0.6, -0.2,
 
-  // 加载纹理
-  var imgSrc = '../resources/sky.jpg';
-  initTextures(gl, n, imgSrc, 'u_Sampler');
+    0.0, 0.5, 0.0, // The front blue one 
+    -0.5, -0.5, 0.0,
+    0.5, -0.5, 0.0,
+  ]);
+  var n = initArrayBuffers(gl, vertices, 'a_Position', 3);
+
+  // 写入颜色数据
+  var colors = new Float32Array([
+    0.4, 1.0, 0.4, // The back green one
+    0.4, 1.0, 0.4,
+    1.0, 0.4, 0.4,
+
+    1.0, 0.4, 0.4, // The middle yellow one
+    1.0, 1.0, 0.4,
+    1.0, 1.0, 0.4,
+
+    0.4, 0.4, 1.0,  // The front blue one 
+    0.4, 0.4, 1.0,
+    1.0, 0.4, 0.4,
+  ]);
+  initArrayBuffers(gl, colors, 'a_Color', 3);
+
+  // 定义视图矩阵
+  var viewMatrix = new Matrix4();
+  // 站在点（0, 0.25, 0.25）往点（0, 0, 0）看，上方向为 y 轴正方向
+  viewMatrix.setLookAt(0, 0.25, 0.25, 0, 0, 0, 0, 1, 0);
+  // 存入顶点着色器
+  var u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+  gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
+
+  // 画图
+  gl.clearColor(0, 0, 0, 0.4);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.TRIANGLES, 0, n);
 }
 
-// 往缓存写入数据
 function initArrayBuffers (gl, vertices, attribName, num) {
   var vertexBuffer = gl.createBuffer(); // 创建缓存对象
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer); // 绑定对象到目标
@@ -65,39 +89,5 @@ function initArrayBuffers (gl, vertices, attribName, num) {
   gl.vertexAttribPointer(position, num, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(position); // 激活变量
 
-  return vertices.length / 2;
-}
-
-// 初始化纹理对象
-function initTextures (gl, n, imgSrc, textName) {
-  var texture = gl.createTexture();   // 创建纹理对象
-  var u_Sampler = gl.getUniformLocation(gl.program, textName); // 获取纹理地址
-  var image = new Image();  // 创建图片对象
-  // 图片下载完后，加载纹理
-  image.onload = function () {
-    loadTexture(gl, n, texture, u_Sampler, image);
-  };
-  // 图片地址
-  image.src = imgSrc;
-  return true;
-}
-
-// 加载纹理
-function loadTexture (gl, n, texture, u_Sampler, image) {
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // 对纹理图像进行 y 轴反转
-  // 开启 0 号纹理单单元
-  gl.activeTexture(gl.TEXTURE0);
-  // 向 target 绑定纹理对象
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-
-  // 配置纹理参数
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  // 配置纹理图像
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
-
-  // 将 0 号纹理传递给着色器: 唯一能赋值给取样器变量的就是纹理单元编号
-  gl.uniform1i(u_Sampler, 0);
-
-  gl.clear(gl.COLOR_BUFFER_BIT);   // 清空画布
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, n); // 画图
+  return vertices.length / num;
 }

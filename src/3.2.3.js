@@ -34,6 +34,7 @@ function main() {
   var n = initVertexBuffers(gl, vertices, 'a_Position');
 
   // 定义旋转矩阵
+  // (1)自定义
   const angle = -Math.PI / 2; // 旋转 90 度
   const sinA = Math.sin(angle);
   const cosA = Math.cos(angle);
@@ -43,10 +44,14 @@ function main() {
       0.0,  0.0,  1.0,   0.0,
       0.0,  0.0,  0.0,  1.0
   ]);
+  // (2)矩阵生成
+  var modelMatrix = new Matrix4();
+  modelMatrix.setRotate(90, 0, 0, 1);
 
   // 写入旋转矩阵
   var u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
-  gl.uniformMatrix4fv(u_xformMatrix, false, xformMatrix);
+  // gl.uniformMatrix4fv(u_xformMatrix, false, xformMatrix);
+  gl.uniformMatrix4fv(u_xformMatrix, false, modelMatrix.elements);
 
   // 画图
   gl.clearColor(0, 0, 0, 1);

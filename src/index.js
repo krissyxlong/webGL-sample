@@ -1,6 +1,7 @@
 var VSHADER_SOURCE =
+  'attribute vec4 a_Position;\n' + // attribute 变量
   'void main() {\n' +
-  '  gl_Position = vec4(0.5, 0.5, 0.5, 1.0);\n' + // 设置顶点坐标
+  '  gl_Position = a_Position;\n' + // 设置顶点坐标
   '  gl_PointSize = 10.0;\n' +                    // 设置顶点大小
   '}\n';
 
@@ -19,6 +20,10 @@ function main () {
     console.log('Failed to intialize shaders.');
     return;
   }
+
+  // 获取 a_Position 存储位置，通过地址像变量中传输数据
+  var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+  gl.vertexAttrib3f(a_Position, 0.0, 0.5, 0.0);
 
   // 清空绘图区
   gl.clearColor(0.0, 0.0, 0.0, 0.7);

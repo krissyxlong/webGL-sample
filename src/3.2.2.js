@@ -12,9 +12,6 @@ var FSHADER_SOURCE =
   '  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n' +
   '}\n';
 
-// 缩放因子
-var Sx = 1.0, Sy = 1.5, Sz = 1.0;
-
 function main() {
   // 获取画图上下文
   var canvas = document.getElementById('webgl');
@@ -32,17 +29,23 @@ function main() {
   ]);
   var n = initVertexBuffers(gl, vertices, 'a_Position');
 
-  // 定义旋转矩阵
+  // 定义缩放矩阵
+  var Sx = 1.0, Sy = 1.5, Sz = 1.0; // 缩放因子
+  // (1)自定义
   var xformMatrix = new Float32Array([
       Sx,   0.0,  0.0,  0.0,
       0.0,  Sy,   0.0,  0.0,
       0.0,  0.0,  Sz,   0.0,
       0.0,  0.0,  0.0,  1.0
   ]);
+  // (2)矩阵库生成
+  var modelMatrix = new Matrix4();
+  modelMatrix.setScale(Sx, Sy, Sz);
 
   // 写入旋转矩阵
   var u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
   gl.uniformMatrix4fv(u_xformMatrix, false, xformMatrix);
+  // gl.uniformMatrix4fv(u_xformMatrix, false, modelMatrix.elements);
 
   // 画图
   gl.clearColor(0, 0, 0, 1);

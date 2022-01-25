@@ -1,13 +1,16 @@
-/* 4.2.1：三个彩色三角形 */
+/* 4.2.3：三个彩色三角形 + 视图矩阵 + 模型矩阵 + 投影矩阵 */
 
 // 顶点着色器
 var VSHADER_SOURCE =
   'attribute vec4 a_Position;\n' +
+  'uniform mat4 u_ViewMatrix;\n' +
+  'uniform mat4 u_ModelMatrix;\n' +
+  'uniform mat4 u_ProjectMatrix;\n' +
   'attribute vec3 a_Color;\n' +
   'varying vec3 v_Color;\n' +
 
   'void main() {\n' +
-  '  gl_Position = a_Position;\n' +
+  '  gl_Position = u_ProjectMatrix * u_ViewMatrix * u_ModelMatrix * a_Position;\n' +
   '  v_Color = a_Color;\n' +
   '}\n';
 
@@ -65,8 +68,30 @@ function main () {
   ]);
   initArrayBuffers(gl, colors, 'a_Color', 3);
 
+  // 定义视图矩阵
+  var viewMatrix = new Matrix4();
+  // 站在点（0, 0.25, 0.25）往点（0, 0, 0）看，上方向为 y 轴正方向
+  viewMatrix.setLookAt(0, 0.25, 0.25, 0, 0, 0, 0, 1, 0);
+  // 存入顶点着色器
+  var u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+  gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
+
+  // 定义模型矩阵
+  var modelMatrix = new Matrix4();
+  // modelMatrix.setScale(0.5, 1.0, 1.0); // x 轴方向缩小 0.5
+  modelMatrix.setTranslate(0.6, 0.0, 0.0); // x 轴正方向移动 0.5
+  // 存入顶点着色器
+  var u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+
+  // 定义投影矩阵
+  var projectMatrix = new Matrix4();
+  projectMatrix.setOrtho(-1.0, 1.5, -1.0, 1.0, 0.0, 2.0);
+  var u_ProjectMatrix = gl.getUniformLocation(gl.program, 'u_ProjectMatrix');
+  gl.uniformMatrix4fv(u_ProjectMatrix, false, projectMatrix.elements);
+
   // 画图
-  gl.clearColor(0, 0, 0, 1);
+  gl.clearColor(0, 0, 0, 0.4);
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.drawArrays(gl.TRIANGLES, 0, n);
 }
