@@ -1,0 +1,66 @@
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+	<title>Three.js - Responsive</title>
+	<script src="https://threejs.org/build/three.js"></script>
+	<style>
+		html,
+		body {
+			height: 100%;
+			margin: 0;
+		}
+	</style>
+</head>
+
+<body>
+
+</body>
+
+<script>
+	const scene = new THREE.Scene();
+	const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+	const renderer = new THREE.WebGLRenderer();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setClearColor(0x000000, 0.3);
+	document.body.appendChild(renderer.domElement);
+
+	{
+		const color = 0xFFFFFF;
+		const intensity = 1;
+		const light = new THREE.AmbientLight(color, intensity);
+		scene.add(light);
+	}
+
+	const geometry = new THREE.BoxGeometry(1, 1, 1);
+	const material = [
+		new THREE.MeshPhongMaterial({ color: 0x00ff00 }),
+		new THREE.MeshPhongMaterial({ color: 0x00ff00 }),
+		new THREE.MeshPhongMaterial({ color: 0xff0000 }),
+		new THREE.MeshPhongMaterial({ color: 0xff0000 }),
+		new THREE.MeshPhongMaterial({ color: 0x0000ff }),
+		new THREE.MeshPhongMaterial({ color: 0x0000ff }),
+	];
+	const cube = new THREE.Mesh(geometry, material);
+	scene.add(cube);
+
+	camera.position.z = 5;
+
+	function animate () {
+		requestAnimationFrame(animate);
+
+		cube.rotation.x += 0.01;
+		cube.rotation.y += 0.01;
+
+		renderer.render(scene, camera);
+	};
+
+	animate();
+
+</script>
+
+</html>

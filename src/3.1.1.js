@@ -19,7 +19,8 @@ function main() {
 
   // 将顶点坐标数据写进顶点着色器
   const vertices = new Float32Array([
-    0, 0.5,   -0.5, -0.5,   0.5, -0.5
+    0, 0.5, -0.5, -0.5, 0.5, -0.5,
+    // -0.5, 0, -1, -1, 0, -1
   ]);
   var n = initVertexBuffers(gl, vertices, 'a_Position');
 
